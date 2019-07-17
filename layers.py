@@ -44,11 +44,11 @@ class ReLu(BaseLayer):
         return grad * (inp > 0)
 
 
-# fc = FC(10, 10)
-# inp = np.arange(10)
-# grad = np.arange(10)-4
+# fc = FC(10, 20)
+# inp = np.arange(40).reshape(2, -1)
+# grad = np.arange(40).reshape(2, -1) - 4
 # print(fc.backward(inp, grad))
-#
+# #
 # relu = ReLu()
 # inp -= 5
 # print(relu.backward(inp, grad))

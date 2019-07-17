@@ -4,6 +4,7 @@ from PIL import Image
 
 
 def download_data(path='/home/kotik/mnist_png', part="train"):
+    # path += '/train'
     if part == 'train':
         path += '/training'
     else:
@@ -14,11 +15,16 @@ def download_data(path='/home/kotik/mnist_png', part="train"):
     for category in os.listdir(path):
         for image in os.listdir(path + '/' + category):
             data.append(np.array(Image.open(path + '/' + category + '/' + image)).reshape(-1))
-            data_labels.append(category)
+            data_labels.append(int(category))
 
     data_labels = np.concatenate([data_labels])
     data = np.concatenate([data], axis=1)
-    return data, data_labels
+
+    conc = list(zip(data, data_labels))
+    np.random.seed(42)
+    np.random.shuffle(conc)
+    data, data_labels = zip(*conc)
+    return np.array(data), np.array(data_labels)
 
 
 class DataLoader(object):
@@ -27,6 +33,14 @@ class DataLoader(object):
         self.data, self.labels = download_data(path, part)
         self.n = self.labels.shape[0] // self.batch_size
         self.num = 0
+        if shuffle:
+            np.random.seed(None)
+            conc = list(zip(self.data, self.data_labels))
+            np.random.seed(42)
+            np.random.shuffle(conc)
+            self.data, self.data_labels = zip(*conc)
+            self.data = np.array(self.data)
+            self.data_labels = np.array(self.data_labels)
 
     def __iter__(self):
         return self
