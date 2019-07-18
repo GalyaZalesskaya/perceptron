@@ -26,8 +26,9 @@ class FC(BaseLayer):
         return np.dot(inp, self.weight) + self.bias
 
     def backward(self, inp, grad):
-        grad_w = np.dot(grad.T, inp)
-        grad_b = grad
+        # grad_w = np.dot(grad.T, inp)  #first variant
+        grad_w = np.dot(inp.T, grad)
+        grad_b = np.mean(grad, axis=0) * inp.shape[0]
         grad_inp = np.dot(grad, self.weight.T)
         return grad_w, grad_b, grad_inp
 

@@ -2,6 +2,9 @@ import numpy as np
 from copy import deepcopy
 import layers
 import data_loader
+import loss
+import optimizer
+
 
 
 class NN(object):
@@ -18,7 +21,7 @@ class NN(object):
             self.outputs.append(deepcopy(output))
         return self.outputs
 
-    @property
+    # @property
     def get_layers(self):
         return self.layers
 
@@ -36,15 +39,61 @@ def validate(data_loader, nn):
 
     return np.mean(accuracy)
 
-# def train(data_loader, lr, nn):
 
-    # for batch in data_loader:
-        ###  CONTINUE TOMORROW
+def train(data_loader, lr, nn):
+    batch_size = data_loader.batch_size
+    i = 0
+    for batch in data_loader:
+        batch_loss = []
+
+        # print("FC1 weights ", nn.get_layers()[0].weight)
+        #
+        # print("FC2 weights ", nn.get_layers()[-1].weight)
+        # print("_______________________________________")
+
+        output = nn.forward(batch[0])
+        # print("OUTPUTS OF FORWARD ", output)
+        prediction = output[-1]
+        l2 = loss.L2()
+
+        # print("batch shape ", batch[0], np.shape(batch[-1]))
+        # print("\nOutput shape", output,  np.shape(output))
+        # print("batch shape \nOutput shape", np.shape(batch[-1]), np.shape(output))
+
+        batch_loss.append(l2.get_loss(batch[-1], prediction))
+        # print(np.mean(batch_loss))
+
+        grad = l2.get_grad(batch[-1], prediction)
+        # print("Gradient of loss ", grad, grad.shape)
+        opt = optimizer.Optimizer(nn.get_layers(), lr)
+        # print()
+        # opt.backward(output, grad)
 
 
-# loader = data_loader.DataLoader(256, part='test')
-# nn = NN()
+        # print("FC1 weights ", nn.get_layers()[0].weight)
+        #
+        # print("FC2 weights ", nn.get_layers()[-1].weight)
+        # i += 1
+        # if i == 2:
+        #     break
+    print("Loss is ", np.mean(batch_loss))
+
+
+
+
+loader = data_loader.DataLoader(16, part='test')
+nn = NN()
+for _ in range(15):
+    loader = data_loader.DataLoader(16, part='test')
+    train(loader, 0.01, nn)
+
+# def train_model(data_loader, nn, batch_size, lr, epochs):
+#     for epoch in range(epochs):
+#         train(data_loader, lr, nn)
 #
-# print(validate(loader, nn))
-
+# def main():
+#     lr = 0.01
+#     batch_size = 32
+#     epochs = 2
+#
 
