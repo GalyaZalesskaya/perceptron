@@ -21,13 +21,15 @@ class L2(Loss):
     def get_loss(self, labels, output):
         y = one_hot(labels)
         # print("Labels shape, one-hot shape ", labels.shape, y.shape)
+        # print("REAL ", y)
+        # print("PREDICTED ", softmax(output))
         return np.sum((y-softmax(output))**2, axis=1)  # returns vector of losses for every picture
         # return np.mean(np.sum((y - softmax(output)) ** 2, axis=1))  # returns one loss for batch
 
     def get_grad_loss(self, labels, output, batch_size):
         y = one_hot(labels)
         # print("GRAD LOSS ", np.sum((y - output), axis=1)*2/batch_size)
-        return np.sum((y - output), axis=1)*2/batch_size
+        return (y - output)*2/batch_size
 
     def get_grad(self, labels, output):
         batch_size = labels.shape[0]
@@ -38,19 +40,22 @@ class L2(Loss):
             # picture = softmax(picture)
             Jx = -picture*picture.T * (-np.eye(feature) + 1) + np.eye(feature)*(picture - picture**2)
             # print("PICTURE ", picture, Jx)
-            JS.append(Jx)
-        JS = np.stack(JS)  # m*n*n
+            JS.append(np.sum(Jx))  # mean number
+        JS = np.stack(JS)  # 1*m
 
-        grad_loss = self.get_grad_loss(labels, output, batch_size)  # m*1
+        grad_loss = self.get_grad_loss(labels, output, batch_size)  # m*n
 
-        print("GRAD LOSS ", grad_loss)
-        JS = JS * grad_loss[:, np.newaxis, np.newaxis]  # m*n*n
+        # print("GRAD LOSS ", grad_loss)
 
-        return np.mean(JS, axis=-1)  # m*n
+        JS = JS[:, np.newaxis] * grad_loss  # m*1 * m*n = m*n(broadcasting)
+
+        return JS  # m*n
 
 
 def softmax(x, ax=1):
-    return np.exp(x)/np.sum(np.exp(x), axis=ax).reshape(-1, 1)
+    e_x = np.exp(x - np.max(x, axis=1).reshape(-1, 1))
+    return e_x / e_x.sum(axis=1).reshape(-1, 1)
+    # return np.exp(x)/np.sum(np.exp(x), axis=ax).reshape(-1, 1)
 
 
 def one_hot(labels):

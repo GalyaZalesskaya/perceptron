@@ -11,7 +11,7 @@ class Optimizer(object):
     def backward(self, inp, grad):
         layers = list(reversed(self.layers))
         n_layers = np.shape(layers)[0]
-        # print(n_layers)
+
         for i, layer in enumerate(layers):
             # print("INPUT FOR " + str(i) + " LAYER ", inp[n_layers - 1 - i])
             if isinstance(layer, Layers.FC):
