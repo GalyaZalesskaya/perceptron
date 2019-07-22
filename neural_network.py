@@ -51,7 +51,7 @@ def train(data_loader, lr, nn):
     # batch_size = data_loader.batch_size
     i = 0
     accuracy = []
-    for batch in data_loader:
+    for x, y in data_loader:
         batch_loss = []
 
         # print("FC1 weights ", nn.get_layers()[0].weight)
@@ -59,7 +59,7 @@ def train(data_loader, lr, nn):
         # print("FC2 weights ", nn.get_layers()[-1].weight)
         # print("_______________________________________")
 
-        output = nn.forward(batch[0])
+        output = nn.forward(x)
         # print("OUTPUTS OF FORWARD ", output)
         prediction = output[-1]
         l2 = loss.L2()
@@ -67,17 +67,17 @@ def train(data_loader, lr, nn):
         # print("batch shape ", batch[0], np.shape(batch[-1]))
         # print("\nOutput shape", output,  np.shape(output))
         # print("batch shape \nOutput shape", np.shape(batch[-1]), np.shape(output))
-        loss_for_batch = l2.get_loss(batch[-1], prediction)
+        loss_for_batch = l2.get_loss(y, prediction)
         # print(str(i) + " PREDICTON ", prediction.argmax(axis=1))
         # print(str(i) + " LABEL ", batch[-1])
         # print(prediction.argmax(axis=1) == batch[-1])
-        accuracy.append(np.mean(prediction.argmax(axis=1) == batch[-1]))
+        accuracy.append(np.mean(prediction.argmax(axis=1) == y))
 
         # print("LOSS FOR " + str(i) + " BATCH ", loss_for_batch)
         batch_loss.append(np.mean(loss_for_batch))
         # print(np.mean(batch_loss))
 
-        grad = l2.get_grad(batch[-1], prediction)
+        grad = l2.get_grad(y, prediction)
         # print("Gradient of loss ", grad, grad.shape)
         opt = optimizer.Optimizer(nn.get_layers(), lr)
         # print()
@@ -97,12 +97,17 @@ def train(data_loader, lr, nn):
 
 
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
-loader = data_loader.DataLoader(16, part='test')
+x_train = x_train.reshape([x_train.shape[0], -1])
+x_test = x_test.reshape([x_test.shape[0], -1])
+# loader = data_loader.DataLoader(16, part='test')
+
 nn = NN()
-for _ in range(5):
+for e in range(50):
     # loader = data_loader.DataLoader(16, part='test')
     # train(loader, 0.01, nn)
-    train([x_test, y_test], 0.01, nn)
+    print("Epoch ", str(e))
+    train(data_loader.iterate_minibatches(x_train, y_train, batchsize=64, shuffle=False), 0.01, nn)
+
     # print("ACCURACY IS ", validate(loader, nn))
 
 # def train_model(data_loader, nn, batch_size, lr, epochs):
